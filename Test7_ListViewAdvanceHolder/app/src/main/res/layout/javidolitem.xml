@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:id="@+id/idolpicture"
+        />
+
+    <TextView
+        android:id="@+id/idolname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="33dp"
+        android:layout_marginTop="31dp"
+        android:layout_toEndOf="@+id/idolpicture"
+        android:text="Hello World"
+        android:textColor="#da172b"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/idoldetail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/idolname"
+        android:layout_alignStart="@+id/idolname"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="16dp"
+        android:text="Cyka Blyat"
+        android:textColor="#1131d1" />
+
+</RelativeLayout>

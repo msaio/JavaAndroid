@@ -1,0 +1,165 @@
+package com.example.uzer.test11_sqllite;
+
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.database.Cursor;
+import android.provider.ContactsContract;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity {
+
+    Database database;
+    Button Click, Clear;
+    Integer size = 0;
+    ListView JobListView;
+    List<Job> jobList;
+    JobAdapter adapter;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Action_1();
+
+    }
+    // Menu
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.add_job,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.addmenu){
+            DialogAdd();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+    // Add Job Dialog
+    private void DialogAdd(){
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_add_job);
+
+        final EditText editText = dialog.findViewById(R.id.NameAdd);
+        Button buttonAdd = dialog.findViewById(R.id.ButtonAdd);
+        Button buttonCancel = dialog.findViewById(R.id.ButtonCancel);
+
+        buttonCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        buttonAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String jobname = editText.getText().toString();
+                if(jobname.equals("")){
+                    Toast.makeText(MainActivity.this, "Invalid Input, Enter Something", Toast.LENGTH_SHORT).show();
+                }else{
+                    database.QueryData("insert into job values(null,'" + jobname + "')");
+                    Toast.makeText(MainActivity.this,"Added", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                    GetDataJob();
+                }
+            }
+        });
+
+        dialog.show();
+    }
+    // Edit Job Dialog
+    public void DialogEdit(String name, final Integer id){
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_edit);
+
+        final EditText editText = (EditText) dialog.findViewById(R.id.NameEdit);
+        Button buttonEdit = (Button) dialog.findViewById(R.id.ButtonEdit);
+        Button buttonCancelEdit = (Button) dialog.findViewById(R.id.ButtonCancelEdit);
+
+        editText.setText(name);
+        buttonCancelEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        buttonEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String newName = editText.getText().toString().trim();
+                database.QueryData("update job set name='"+newName+"' where id='"+id+"'");
+                Toast.makeText(MainActivity.this, "Updated", Toast.LENGTH_SHORT).show();
+                dialog.dismiss();
+                GetDataJob();
+            }
+        });
+        dialog.show();
+    }
+    // Delete Job Dialog
+    public void DiaglogDelete(final String name, final Integer id){
+        final AlertDialog.Builder dialogDelete = new AlertDialog.Builder(this);
+        dialogDelete.setMessage("You Are going to delete "+name+". Are You Sure ?");
+        dialogDelete.setPositiveButton("Yes, Do It", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                database.QueryData("delete from job where id ='"+id+"'");
+                Toast.makeText(MainActivity.this,name+" Deleted", Toast.LENGTH_SHORT).show();
+                GetDataJob();
+            }
+        });
+        dialogDelete.setNegativeButton("No, Stop", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+        dialogDelete.show();
+    }
+    // Get Data from job table
+    private void GetDataJob(){
+        Cursor dataJob = database.GetData("select * from job");
+        jobList.clear();
+        while (dataJob.moveToNext()){
+            String name = dataJob.getString(1);
+            Integer id = dataJob.getInt(0);
+            jobList.add(new Job(id, name));
+        }
+
+        adapter.notifyDataSetChanged();
+    }
+    // Create and Using Database
+    private void CreateConnection(){
+        JobListView = (ListView) findViewById(R.id.JobListView);
+        jobList = new ArrayList<>();
+        adapter = new JobAdapter(MainActivity.this, R.layout.job, jobList);
+        JobListView.setAdapter(adapter);
+
+        database = new Database(MainActivity.this,
+                "note.sqlite",
+                null,
+                1);
+        database.QueryData("create table if not exists job" +
+                "(id integer primary key autoincrement, name varchar(200))");
+    }
+    private void Action_1(){
+        CreateConnection();
+        GetDataJob();
+    }
+}
